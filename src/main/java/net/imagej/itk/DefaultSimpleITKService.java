@@ -42,6 +42,8 @@ import net.imglib2.img.Img;
 import net.imglib2.img.itk.ItkImageImg;
 import net.imglib2.img.itk.ItkImgFactory;
 import net.imglib2.iterator.LocalizingZeroMinIntervalIterator;
+import net.imglib2.loops.LoopBuilder;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
@@ -76,7 +78,8 @@ public class DefaultSimpleITKService extends AbstractService implements
 	private LogService logService;
 
 	@Override
-	public Image getImage(final Dataset dataset) {
+	public Image getImage(final Dataset dataset)
+	{
 		final int numDimensions = dataset.numDimensions();
 
 		final VectorUInt32 itkDimensions = new VectorUInt32(numDimensions);
@@ -85,29 +88,28 @@ public class DefaultSimpleITKService extends AbstractService implements
 			itkDimensions.set(i, dataset.dimension(i));
 		}
 
-		final Image image =
-			new Image(itkDimensions, org.itk.simple.PixelIDValueEnum.sitkFloat32);
-
-		final LocalizingZeroMinIntervalIterator i =
-			new LocalizingZeroMinIntervalIterator(dataset);
-		final RandomAccess<RealType<?>> s = dataset.randomAccess();
-
-		final VectorUInt32 index = new VectorUInt32(numDimensions);
-
-		while (i.hasNext()) {
-			i.fwd();
-			s.setPosition(i);
-
-			for (int d = 0; d < numDimensions; d++) {
-				index.set(d, i.getLongPosition(d));
-			}
-
-			final float pix = s.get().getRealFloat();
-
-			image.setPixelAsFloat(index, pix);
+		Img img = dataset.getImgPlus().getImg();
+		if( img instanceof ItkImageImg )
+		{
+			return ((ItkImageImg)img).getImage(); 
 		}
+		else 
+			return getImage( img ).getImage();
+	}
 
-		return image;
+	public <T extends NativeType<T> & RealType<T>> ItkImageImg<T,?> getImage(final Img<T> img )
+	{
+		ItkImgFactory<T> factory = new ItkImgFactory<T>( img.firstElement() );
+		ItkImageImg<T,?> itkImg = factory.create( img );
+		LoopBuilder.setImages( img, itkImg ).forEachPixel( (x,y) -> y.set(x) );
+		return itkImg;
+	}
+
+	protected <T extends NativeType<T> & RealType<T>> void copy(
+			final Img<T> src,
+			final ItkImageImg<T,?> dst )
+	{
+		LoopBuilder.setImages( src, dst ).forEachPixel( (x,y) -> y.set(x) );
 	}
 
 	@SuppressWarnings("unchecked")
