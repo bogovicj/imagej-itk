@@ -35,6 +35,8 @@ import net.imagej.ops.AbstractOp;
 import net.imglib2.type.numeric.RealType;
 
 import org.itk.simple.Image;
+import org.itk.simple.VectorDouble;
+import org.itk.simple.RecursiveGaussianImageFilter.OrderType;
 import org.scijava.ItemIO;
 import org.scijava.Priority;
 import org.scijava.plugin.Parameter;
@@ -70,8 +72,11 @@ public class RecursiveGaussianImageOp<T extends RealType<T>, S extends RealType<
 		final org.itk.simple.SmoothingRecursiveGaussianImageFilter itkGauss =
 			new org.itk.simple.SmoothingRecursiveGaussianImageFilter();
 
-		// call itk rl using simple itk wrapper
-		output = itkGauss.execute(itkImage, sigma, false);
+		VectorDouble sigmas = new VectorDouble();
+		for( int i = 0; i < itkImage.getDimension(); i++ )
+			sigmas.add( sigma );
 
+		// call itk rl using simple itk wrapper
+		output = itkGauss.execute(itkImage, sigmas, false);
 	}
 }

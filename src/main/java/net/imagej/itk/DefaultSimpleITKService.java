@@ -35,13 +35,19 @@ import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
+import net.imagej.axis.CalibratedAxis;
+import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
+import net.imglib2.img.itk.ItkImageImg;
+import net.imglib2.img.itk.ItkImgFactory;
 import net.imglib2.iterator.LocalizingZeroMinIntervalIterator;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
 import org.itk.simple.Image;
+import org.itk.simple.SimpleITKJNI;
+import org.itk.simple.VectorDouble;
 import org.itk.simple.VectorUInt32;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
@@ -104,6 +110,7 @@ public class DefaultSimpleITKService extends AbstractService implements
 		return image;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Dataset getDataset(final Image image) {
 		final VectorUInt32 itkDimensions = image.getSize();
@@ -117,42 +124,29 @@ public class DefaultSimpleITKService extends AbstractService implements
 		}
 
 		final String name = "ITK image";
+		VectorDouble spacing = image.getSpacing();
+		VectorDouble origin = image.getOrigin();
+		final DefaultLinearAxis[] calibratedAxes = new DefaultLinearAxis[ numDimensions ];
 
-		final AxisType[] axes = new AxisType[numDimensions];
+		for (int i = 0; i < numDimensions; i++)
+		{
+			if ( i == 0 )
+				calibratedAxes[ i ] = new DefaultLinearAxis( Axes.X, spacing.get( i ));
+			else if (i == 1 )
+				calibratedAxes[ i ] = new DefaultLinearAxis( Axes.Y, spacing.get( i ));
+			else if (i == 2)
+				calibratedAxes[ i ] = new DefaultLinearAxis( Axes.Z, spacing.get( i ));
+			else
+				calibratedAxes[ i ] = new DefaultLinearAxis( Axes.get("Unknown " + (i-3), false ), spacing.get( i ));
 
-		// TODO: copy axis info from itk
-		for (int i = 0; i < axes.length; i++) {
-			if (i == 0) axes[i] = Axes.X;
-			else if (i == 1) axes[i] = Axes.Y;
-			else axes[i] = Axes.get("Unknown " + (i - 2), false);
+			// set origin
+			calibratedAxes[ i ].setOrigin( origin.get( i ));
 		}
 
-		final Dataset dataset =
-			datasetService.create(new FloatType(), dims, name, axes);
-
-		final Img<FloatType> output =
-			(Img<FloatType>) dataset.getImgPlus().getImg();
-
-		// get an iterator
-		final LocalizingZeroMinIntervalIterator i =
-			new LocalizingZeroMinIntervalIterator(output);
-
-		final RandomAccess<FloatType> s = output.randomAccess();
-
-		final VectorUInt32 index = new VectorUInt32(3);
-
-		while (i.hasNext()) {
-			i.fwd();
-			s.setPosition(i);
-
-			for (int d = 0; d < numDimensions; d++) {
-				index.set(d, i.getLongPosition(d));
-			}
-
-			final float pix = image.getPixelAsFloat(index);
-
-			s.get().setReal(pix);
-		}
+		ItkImageImg img = ItkImageImg.wrap(image);
+		final Dataset dataset = datasetService.create( img );
+		dataset.setName( name );
+		dataset.setAxes(calibratedAxes);
 
 		return dataset;
 	}
