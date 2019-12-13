@@ -3,16 +3,13 @@ package net.imglib2.img.itk;
 import org.itk.simple.Image;
 import org.itk.simple.VectorUInt32;
 
+import net.imglib2.Dimensions;
 import net.imglib2.Interval;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.ImgFactory;
 import net.imglib2.img.NativeImg;
-import net.imglib2.img.array.ArrayImg;
-import net.imglib2.img.basictypeaccess.ArrayDataAccessFactory;
-import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.NativeTypeFactory;
-import net.imglib2.util.Fraction;
 
 public class ItkImgFactory <T extends NativeType<T>> extends ImgFactory<T>
 {
@@ -38,7 +35,14 @@ public class ItkImgFactory <T extends NativeType<T>> extends ImgFactory<T>
 		return create( dim, type, ((NativeTypeFactory)type().getNativeTypeFactory()));
 	}
 	
-	@SuppressWarnings("unchecked")
+	public ItkImageImg< T,? > create( final Dimensions dimensions )
+	{
+		final long[] size = new long[ dimensions.numDimensions() ];
+		dimensions.dimensions( size );
+
+		return create( size );
+	}
+
 	private <A extends AbstractItkAccess<A>> ItkImageImg<T,A> create(
 			final long[] dimensions,
 			final T type,

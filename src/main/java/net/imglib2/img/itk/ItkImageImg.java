@@ -9,7 +9,7 @@ import net.imglib2.img.ImgFactory;
 import net.imglib2.img.NativeImg;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.NativeTypeFactory;
-import net.imglib2.type.itk.WrappedItkUnsignedByteType_v1;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -65,10 +65,11 @@ public class ItkImageImg< T extends NativeType< T >, A extends AbstractItkAccess
 	{
 		String pixelIdString = itkImage.getPixelIDTypeAsString();
 
+		// TODO finish this
 		switch( pixelIdString )
 		{
 		case "8-bit unsigned integer":
-			return (T) new WrappedItkUnsignedByteType_v1();
+			return (T) new UnsignedByteType();
 		case "16-bit unsigned integer":
 			return (T) new UnsignedShortType();
 		case "32-bit float":
@@ -144,6 +145,7 @@ public class ItkImageImg< T extends NativeType< T >, A extends AbstractItkAccess
 
 	@Override
 	public Object iterationOrder() {
+		// TODO fix this
 		return null;
 	}
 
