@@ -70,7 +70,13 @@ public class RecursiveGaussianImageCommand<T extends RealType<T> & NativeType<T>
 	protected Image input;
 
 	@Parameter
-	protected float sigma = 3.0f;
+	protected double sigmaX = 3.0;
+
+	@Parameter
+	protected double sigmaY = 3.0;
+
+	@Parameter
+	protected double sigmaZ = 3.0;
 
 	@Parameter(type = ItemIO.OUTPUT)
 	protected Dataset output;
@@ -79,7 +85,7 @@ public class RecursiveGaussianImageCommand<T extends RealType<T> & NativeType<T>
 	public void run() {
 
 		// call the op
-		final Image image = (Image) ops.run(RecursiveGaussian.NAME, input, sigma);
+		final Image image = (Image) ops.run(RecursiveGaussian.NAME, input, sigmaX, sigmaY, sigmaZ);
 
 		output = simpleITKService.getDataset(image);
 	}

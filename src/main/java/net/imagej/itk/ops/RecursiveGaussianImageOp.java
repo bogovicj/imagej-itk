@@ -31,38 +31,49 @@
 
 package net.imagej.itk.ops;
 
+import net.imagej.Dataset;
 import net.imagej.ops.AbstractOp;
 import net.imglib2.type.numeric.RealType;
 
 import org.itk.simple.Image;
+import org.itk.simple.VectorDouble;
 import org.scijava.ItemIO;
 import org.scijava.Priority;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.UIService;
 
 /**
  * An op that wraps the itk implementation of Recursive Gaussian Filter
  *
  * @author Brian Northan
+ * @author John Bogovic
  * @param <T>
  * @param <S>
  */
 @Plugin(type = RecursiveGaussian.class, name = RecursiveGaussian.NAME,
-	priority = Priority.HIGH_PRIORITY + 1)
+	priority = Priority.HIGH + 50 )
 public class RecursiveGaussianImageOp<T extends RealType<T>, S extends RealType<S>>
 	extends AbstractOp
 {
 
 	@Parameter
+	UIService ui;
+
+	@Parameter
 	protected Image itkImage;
 
 	@Parameter
-	protected float sigma = 3.0f;
+	protected double sigmaX = 3.0;
+
+	@Parameter
+	protected double sigmaY = 3.0;
+
+	@Parameter
+	protected double sigmaZ = 3.0;
 
 	@Parameter(type = ItemIO.OUTPUT, required = false)
 	protected Image output;
-
-	org.itk.simple.RecursiveGaussianImageFilter itkGauss;
 
 	@Override
 	public void run() {
@@ -70,8 +81,25 @@ public class RecursiveGaussianImageOp<T extends RealType<T>, S extends RealType<
 		final org.itk.simple.SmoothingRecursiveGaussianImageFilter itkGauss =
 			new org.itk.simple.SmoothingRecursiveGaussianImageFilter();
 
+		long nd = itkImage.getDimension();
+		VectorDouble sigmaVec;
+		if( nd > 3 )
+		{
+			// throw exception
+			ui.showDialog( "This plugin works on data of less than five dimensions" );
+			return;
+		}
+		else
+		{
+			sigmaVec = new VectorDouble( nd );
+			if( nd > 0 ){  sigmaVec.set( 0, sigmaX ); };
+			if( nd > 1 ){  sigmaVec.set( 1, sigmaY ); };
+			if( nd > 2 ){  sigmaVec.set( 2, sigmaZ ); };
+		}
+
+
 		// call itk rl using simple itk wrapper
-		output = itkGauss.execute(itkImage, sigma, false);
+		output = itkGauss.execute(itkImage, sigmaVec, false );
 
 	}
 }

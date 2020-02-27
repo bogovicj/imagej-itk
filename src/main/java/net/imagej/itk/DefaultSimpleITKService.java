@@ -56,8 +56,7 @@ import org.scijava.service.Service;
  * @author Mark Hiner
  */
 @Plugin(type = Service.class)
-public class DefaultSimpleITKService extends AbstractService implements
-	SimpleITKService
+public class DefaultSimpleITKService extends AbstractService implements SimpleITKService
 {
 
 	@Parameter
