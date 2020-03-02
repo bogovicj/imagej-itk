@@ -110,7 +110,7 @@ Institute of Molecular Cell Biology and Genetics.</license.copyrightOwners>
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 
-		<simpleitk.version>0.9.0</simpleitk.version>
+		<simpleitk.version>1.2.0</simpleitk.version>
 	</properties>
 
 	<repositories>
@@ -129,8 +129,8 @@ Institute of Molecular Cell Biology and Genetics.</license.copyrightOwners>
 
 		<!-- ITK dependencies -->
 		<dependency>
-			<groupId>org.itk.simple</groupId>
-			<artifactId>simpleitk</artifactId>
+			<groupId>itk</groupId>
+			<artifactId>simple-itk</artifactId>
 			<version>${simpleitk.version}</version>
 		</dependency>
 

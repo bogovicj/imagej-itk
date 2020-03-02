@@ -48,7 +48,7 @@ import org.scijava.plugin.Plugin;
  * @author Mark Hiner
  * @author Brian Northan
  */
-@Plugin(type = PreprocessorPlugin.class, priority = Priority.VERY_HIGH_PRIORITY)
+@Plugin(type = PreprocessorPlugin.class, priority = Priority.EXTREMELY_HIGH)
 public class SimpleITKImagePreprocessor extends SingleInputPreprocessor<Image> {
 
 	@Parameter(required = false)
